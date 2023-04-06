@@ -53,10 +53,10 @@ export default {
             }
             try {
                 // 发送登录请求
-                const res = await fetch('https://api.punengshuo.com/api/auth/login', {
+                const res = await fetch('https://api.punengshuo.com/api/auth/loginThird', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ account: this.username, pwd: this.password })
+                    body: JSON.stringify({ account: this.username, pwd: this.password, redirectUrl: this.redirectUrl })
                 });
                 if (!res.ok) {
                     this.error = '登录失败，请检查用户名和密码是否正确';
@@ -64,7 +64,15 @@ export default {
                 }
                 // 登录成功，跳转到首页
                 // 这里可以自定义跳转逻辑
+                const result = await res.json()
+                console.log(result)
+                localStorage.setItem('usercenter-token', result.data.accessToken)
+                if(result.data.redirectUrl && result.data.redirectUrl != ''){
+                    window.location = result.data.redirectUrl
+                }
+               
             } catch (e) {
+                console.log(e)
                 this.error = '服务器错误，请稍后再试';
             }
         },

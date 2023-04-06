@@ -1,9 +1,14 @@
-import App from './App.vue'
+import Login from './components/Login.vue'
 
 export default [
   {
+    path: '/',
+    name: 'home',
+    component: Login
+  },
+  {
     path: '/sign-in',
-    name: 'App',
-    component: App
+    name: 'Login',
+    component: Login
   }
 ]

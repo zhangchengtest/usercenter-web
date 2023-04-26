@@ -1,24 +1,11 @@
 <template>
   <div>
     <div class="tabs">
-      <div class="tab" :class="{ active: activeTab === 'password' }" @click="activeTab = 'password'">密码登录</div>
+      <div class="tab" :class="{ active: activeTab === 'password' }" @click="activeTab = 'password'">二维码登录</div>
       <div class="tab" :class="{ active: activeTab === 'code' }" @click="activeTab = 'code'">验证码登录</div>
     </div>
     <div class="login" v-show="activeTab === 'password'">
-      <form class="login-form">
-        <div class="login-input">
-          <label for="username">用户名</label>
-          <input id="username" type="text" placeholder="请输入用户名" v-model="username" :style="{ minWidth: '300px' }" />
-        </div>
-        <div class="login-input">
-          <label for="password">密码</label>
-          <input id="password" type="password" placeholder="请输入密码" v-model="password" :style="{ minWidth: '300px' }" />
-        </div>
-     
-        <button class="login-button" @click.prevent="login()">登录</button>
-        <div class="error" v-if="error">{{ error }}</div>
-      </form>
-
+      <img :src="qrcodeUrl"/>
     </div>
     <div class="login" v-show="activeTab === 'code'">
       <form class="login-form">
@@ -62,6 +49,12 @@ export default {
         }
        
     },
+  computed: {
+    qrcodeUrl() {
+      const randomNum = Math.floor(Math.random() * 100000);
+      return `https://api.punengshuo.com/api/auth/getQrcode?width=256&height=256&random=${randomNum}`;
+    },
+  },
   methods: {
    
     sendCode() {

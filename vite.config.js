@@ -7,7 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',  // 后端API地址
+        // target: 'http://localhost:8080',  // 后端API地址
+        target: 'https://sso.punengshuo.com',  // 后端API地址
         changeOrigin: true,
       }
     }

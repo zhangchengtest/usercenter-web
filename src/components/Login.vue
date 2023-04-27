@@ -1,15 +1,15 @@
 <template>
   <div>
     <div class="tabs">
-      <div class="tab" :class="{ active: activeTab === 'password' }" @click="activeTab = 'password'">二维码登录</div>
-      <div class="tab" :class="{ active: activeTab === 'code' }" @click="activeTab = 'code'">验证码登录</div>
+      <div class="tab" :class="{ active: activeTab === 'qrcode' }" @click="activeTab = 'qrcode'">{{ qrcodeText }}</div>
+      <div class="tab" :class="{ active: activeTab === 'code' }" @click="activeTab = 'code'">{{ codeText }}</div>
     </div>
-    <div class="login" v-show="activeTab === 'password'">
+    <div class="login" v-show="activeTab === 'qrcode'">
       <form class="login-form">
-        <img :src="qrcodeUrl"/>
-      <div class="error" v-if="qrcodeMesagge">{{ qrcodeMesagge }}</div>
+        <img :src="qrcodeUrl" />
+        <div class="error" v-if="qrcodeMesagge">{{ qrcodeMesagge }}</div>
       </form>
-     
+
     </div>
     <div class="login" v-show="activeTab === 'code'">
       <form class="login-form">
@@ -22,7 +22,7 @@
           <input id="smsCaptcha" type="text" placeholder="请输入验证码" v-model="smsCaptcha" :style="{ minWidth: '300px' }" />
           <div class="btn btn-secondary" @click="sendCode" :class="{ disabled: !canSendCode }">{{ sendBtnText }}</div>
         </div>
-      
+
         <button class="login-button" @click.prevent="loginPhone()">登录</button>
         <div class="error" v-if="error">{{ error }}</div>
       </form>
@@ -46,24 +46,33 @@ export default {
       password: '',
       mobile: '',
       smsCaptcha: '',
-      qrcodeKey:'',
+      qrcodeKey: '',
       timerId: null,
       error: '',
-      qrcodeUrl:'',
-      qrcodeMesagge:'',
+      qrcodeUrl: '',
+      qrcodeMesagge: '',
+      qrcodeText: '',
+      codeText: '',
     }
   },
   mounted() {
-        if(this.$route.query.redirectUrl){
-          this.redirectUrl = this.$route.query.redirectUrl
-        }else{
-          this.redirectUrl = 'https://chengapi.yufu.pub/callback'
-        }
-      
-      this.getUUID()
-       
-       
-    },
+    if (this.$route.query.redirectUrl) {
+      this.redirectUrl = this.$route.query.redirectUrl
+    } else {
+      this.redirectUrl = 'https://chengapi.yufu.pub/callback'
+    }
+
+    if (/MicroMessenger/.test(navigator.userAgent)) {
+     
+      } else {
+        this.activeTab = 'qrcode'
+        this.qrcodeText = '二维码登录'
+        this.codeText = '验证码登录'
+      }
+
+    this.getUUID()
+
+  },
   beforeDestroy() {
     clearInterval(this.timerId);
   },
@@ -73,52 +82,52 @@ export default {
     },
     async getUUID() {
       const res = await fetch('/api/auth/getUUID', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ redirectUrl: this.redirectUrl })
-                });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ redirectUrl: this.redirectUrl })
+      });
 
       const result = await res.json()
 
       if (/MicroMessenger/.test(navigator.userAgent)) {
-          console.log(result.data)
-          window.location = result.data
-        } else {
-          console.log(result.data)
-          // 不在微信浏览器中
-          const uuid = Cookies.get("uuid")
-            if(uuid){
-              this.timerId = setInterval(() => {
-              this.checkQrcodeStatus(uuid);
-            }, 5000);
-            }
-
-          QRCode.toDataURL(result.data)
-            .then(url => {
-              this.qrcodeUrl = url;
-            })
-            .catch(err => {
-              console.error(err);
-            });
+        console.log(result.data)
+        window.location = result.data
+      } else {
+        console.log(result.data)
+        // 不在微信浏览器中
+        const uuid = Cookies.get("uuid")
+        if (uuid) {
+          this.timerId = setInterval(() => {
+            this.checkQrcodeStatus(uuid);
+          }, 5000);
         }
+
+        QRCode.toDataURL(result.data)
+          .then(url => {
+            this.qrcodeUrl = url;
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      }
     },
     async checkQrcodeStatus(uuid) {
 
       const res = await fetch('/api/auth/checkQrcode', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ qrcodeKey: uuid, redirectUrl: this.redirectUrl })
-                });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ qrcodeKey: uuid, redirectUrl: this.redirectUrl })
+      });
       const result = await res.json();
       console.log(result)
       if (result.code != 200) {
-            // this.qrcodeMesagge = result.message;
-            return;
+        // this.qrcodeMesagge = result.message;
+        return;
       }
       localStorage.setItem('usercenter-token', result.data.accessToken)
-      if(result.data.redirectUrl && result.data.redirectUrl != ''){
-          this.qrcodeMesagge ="准备跳了";
-          window.location = result.data.redirectUrl
+      if (result.data.redirectUrl && result.data.redirectUrl != '') {
+        this.qrcodeMesagge = "准备跳了";
+        window.location = result.data.redirectUrl
       }
       // 处理查询结果的代码
     },
@@ -128,15 +137,15 @@ export default {
         return;
       }
       if (!this.mobile) {
-                this.error = '手机号不能为空';
-                return;
-            }
+        this.error = '手机号不能为空';
+        return;
+      }
       // TODO: 发送验证码的逻辑
       fetch('/api/auth/sendSms', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ account: this.mobile})
-                });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ account: this.mobile })
+      });
 
       // 开始倒计时
       this.countdown = 60;
@@ -156,67 +165,67 @@ export default {
       this.canSendCode = false;
     },
     async login() {
-            this.error = '';
-            if (!this.username || !this.password) {
-                this.error = '用户名或密码不能为空';
-                return;
-            }
-            try {
-                // 发送登录请求
-                const res = await fetch('/api/auth/loginThird', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ account: this.username, pwd: this.password, redirectUrl: this.redirectUrl })
-                });
-                if (!res.ok) {
-                    this.error = '登录失败，请检查用户名和密码是否正确';
-                    return;
-                }
-                // 登录成功，跳转到首页
-                // 这里可以自定义跳转逻辑
-                const result = await res.json()
-                console.log(result)
-                localStorage.setItem('usercenter-token', result.data.accessToken)
-                if(result.data.redirectUrl && result.data.redirectUrl != ''){
-                    window.location = result.data.redirectUrl
-                }
-               
-            } catch (e) {
-                console.log(e)
-                this.error = '服务器错误，请稍后再试';
-            }
-        },
-        async loginPhone() {
-            this.error = '';
-            if (!this.mobile || !this.smsCaptcha) {
-                this.error = '手机号或验证码不能为空';
-                return;
-            }
-            try {
-                // 发送登录请求
-                const res = await fetch('/api/auth/loginPhone', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ account: this.mobile, smsCaptcha: this.smsCaptcha, redirectUrl: this.redirectUrl })
-                });
-                if (!res.ok) {
-                    this.error = '登录失败，请检查手机号或验证码是否正确';
-                    return;
-                }
-                // 登录成功，跳转到首页
-                // 这里可以自定义跳转逻辑
-                const result = await res.json()
-                console.log(result)
-                localStorage.setItem('usercenter-token', result.data.accessToken)
-                if(result.data.redirectUrl && result.data.redirectUrl != ''){
-                    window.location = result.data.redirectUrl
-                }
-               
-            } catch (e) {
-                console.log(e)
-                this.error = '服务器错误，请稍后再试';
-            }
-        },
+      this.error = '';
+      if (!this.username || !this.password) {
+        this.error = '用户名或密码不能为空';
+        return;
+      }
+      try {
+        // 发送登录请求
+        const res = await fetch('/api/auth/loginThird', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account: this.username, pwd: this.password, redirectUrl: this.redirectUrl })
+        });
+        if (!res.ok) {
+          this.error = '登录失败，请检查用户名和密码是否正确';
+          return;
+        }
+        // 登录成功，跳转到首页
+        // 这里可以自定义跳转逻辑
+        const result = await res.json()
+        console.log(result)
+        localStorage.setItem('usercenter-token', result.data.accessToken)
+        if (result.data.redirectUrl && result.data.redirectUrl != '') {
+          window.location = result.data.redirectUrl
+        }
+
+      } catch (e) {
+        console.log(e)
+        this.error = '服务器错误，请稍后再试';
+      }
+    },
+    async loginPhone() {
+      this.error = '';
+      if (!this.mobile || !this.smsCaptcha) {
+        this.error = '手机号或验证码不能为空';
+        return;
+      }
+      try {
+        // 发送登录请求
+        const res = await fetch('/api/auth/loginPhone', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account: this.mobile, smsCaptcha: this.smsCaptcha, redirectUrl: this.redirectUrl })
+        });
+        if (!res.ok) {
+          this.error = '登录失败，请检查手机号或验证码是否正确';
+          return;
+        }
+        // 登录成功，跳转到首页
+        // 这里可以自定义跳转逻辑
+        const result = await res.json()
+        console.log(result)
+        localStorage.setItem('usercenter-token', result.data.accessToken)
+        if (result.data.redirectUrl && result.data.redirectUrl != '') {
+          window.location = result.data.redirectUrl
+        }
+
+      } catch (e) {
+        console.log(e)
+        this.error = '服务器错误，请稍后再试';
+      }
+    },
   }
 }
 </script>

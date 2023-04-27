@@ -32,6 +32,8 @@
   
 <script>
 import Cookies from 'js-cookie'
+import QRCode from 'qrcode';
+
 
 export default {
   data() {
@@ -47,6 +49,7 @@ export default {
       qrcodeKey:'',
       timerId: null,
       error: '',
+      qrcodeUrl:'',
       qrcodeMesagge:'',
     }
   },
@@ -63,13 +66,6 @@ export default {
        
        
     },
-  computed: {
-    qrcodeUrl() {
-      const randomNum = Date.now();
-      this.qrcodeKey = randomNum;
-      return `/api/auth/getQrcode?width=256&height=256&qrcodeKey=${this.qrcodeKey}`;
-    },
-  },
   beforeDestroy() {
     clearInterval(this.timerId);
   },
@@ -93,6 +89,13 @@ export default {
           console.log(result.data)
           // 不在微信浏览器中
           const uuid = Cookies.get("uuid")
+          QRCode.toDataURL(result.data)
+            .then(url => {
+              this.qrcodeUrl = url;
+            })
+            .catch(err => {
+              console.error(err);
+            });
         }
     },
     async checkQrcodeStatus() {

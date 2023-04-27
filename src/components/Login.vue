@@ -78,7 +78,12 @@ export default {
       this.qrcodeKey = Date.now();
     },
     async getUUID() {
-      const res =  await fetch('/api/auth/getUUID')
+      const res = await fetch('/api/auth/getUUID', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ redirectUrl: this.redirectUrl })
+                });
+
       const result = await res.json()
 
       if (/MicroMessenger/.test(navigator.userAgent)) {

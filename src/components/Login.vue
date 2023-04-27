@@ -5,7 +5,11 @@
       <div class="tab" :class="{ active: activeTab === 'code' }" @click="activeTab = 'code'">验证码登录</div>
     </div>
     <div class="login" v-show="activeTab === 'password'">
-      <img :src="qrcodeUrl"/>
+      <form class="login-form">
+        <img :src="qrcodeUrl"/>
+      <div class="error" v-if="qrcodeMesagge">{{ qrcodeMesagge }}</div>
+      </form>
+     
     </div>
     <div class="login" v-show="activeTab === 'code'">
       <form class="login-form">
@@ -30,7 +34,7 @@
 export default {
   data() {
     return {
-      activeTab: 'code',
+      activeTab: 'password',
       sendBtnText: '发送验证码',
       canSendCode: true,
       redirectUrl: '',
@@ -38,7 +42,10 @@ export default {
       password: '',
       mobile: '',
       smsCaptcha: '',
-      error: ''
+      qrcodeKey:'',
+      timerId: null,
+      error: '',
+      qrcodeMesagge:'',
     }
   },
   mounted() {
@@ -47,16 +54,44 @@ export default {
         }else{
           this.redirectUrl = 'https://chengapi.yufu.pub/callback'
         }
-       
+        this.timerId = setInterval(() => {
+          this.checkQrcodeStatus();
+        }, 5000);
     },
   computed: {
     qrcodeUrl() {
-      const randomNum = Math.floor(Math.random() * 100000);
-      return `https://api.punengshuo.com/api/auth/getQrcode?width=256&height=256&random=${randomNum}`;
+      const randomNum = Date.now();
+      this.qrcodeKey = randomNum;
+      return `https://api.punengshuo.com/api/auth/getQrcode?width=256&height=256&qrcodeKey=${this.qrcodeKey}`;
     },
   },
+  beforeDestroy() {
+    clearInterval(this.timerId);
+  },
   methods: {
-   
+    refreshQrcode() {
+      this.qrcodeKey = Date.now();
+    },
+    async checkQrcodeStatus() {
+
+      const res = await fetch('https://api.punengshuo.com/api/auth/checkQrcode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ qrcodeKey: this.qrcodeKey+"", redirectUrl: this.redirectUrl })
+                });
+      const result = await res.json();
+      console.log(result)
+      if (result.code != 200) {
+            // this.qrcodeMesagge = result.message;
+            return;
+      }
+      localStorage.setItem('usercenter-token', result.data.accessToken)
+      if(result.data.redirectUrl && result.data.redirectUrl != ''){
+          this.qrcodeMesagge ="准备跳了";
+          window.location = result.data.redirectUrl
+      }
+      // 处理查询结果的代码
+    },
     sendCode() {
       // 如果不能发送验证码，直接返回
       if (!this.canSendCode) {

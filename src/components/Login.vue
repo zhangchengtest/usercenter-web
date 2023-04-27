@@ -84,9 +84,7 @@ export default {
     async getUUID() {
       const res =  await fetch('/api/auth/getUUID')
       const result = await res.json()
-      console.log(result)
-      console.log(result.data)
-      return result.data.url
+      return result.data
     },
     async checkQrcodeStatus() {
 

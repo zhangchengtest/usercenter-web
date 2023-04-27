@@ -59,13 +59,9 @@ export default {
         // this.timerId = setInterval(() => {
         //   this.checkQrcodeStatus();
         // }, 5000);
-        const url = this.getUUID()
-        if (/MicroMessenger/.test(navigator.userAgent)) {
-          window.location = url
-        } else {
-          // 不在微信浏览器中
-          const uuid = Cookies.get("uuid")
-        }
+      this.getUUID()
+       
+       
     },
   computed: {
     qrcodeUrl() {
@@ -84,7 +80,13 @@ export default {
     async getUUID() {
       const res =  await fetch('/api/auth/getUUID')
       const result = await res.json()
-      return result.data
+
+      if (/MicroMessenger/.test(navigator.userAgent)) {
+          window.location = result.data
+        } else {
+          // 不在微信浏览器中
+          const uuid = Cookies.get("uuid")
+        }
     },
     async checkQrcodeStatus() {
 

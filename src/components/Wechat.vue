@@ -55,7 +55,7 @@
             return;
         }
         // TODO: 发送验证码的逻辑
-        fetch('https://api.punengshuo.com/api/auth/sendSms', {
+        fetch('/api/auth/sendSms', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ account: this.mobile})
@@ -91,7 +91,7 @@
               }
               try {
                   // 发送登录请求
-                  const res = await fetch('https://api.punengshuo.com/api/auth/loginPhone', {
+                  const res = await fetch('/api/auth/loginPhone', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ account: this.mobile, smsCaptcha: this.smsCaptcha, openid: this.openid, redirectUrl: this.redirectUrl })

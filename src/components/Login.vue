@@ -31,10 +31,12 @@
 </template>
   
 <script>
+import Cookies from 'js-cookie'
+
 export default {
   data() {
     return {
-      activeTab: 'password',
+      activeTab: '',
       sendBtnText: '发送验证码',
       canSendCode: true,
       redirectUrl: '',
@@ -54,15 +56,22 @@ export default {
         }else{
           this.redirectUrl = 'https://chengapi.yufu.pub/callback'
         }
-        this.timerId = setInterval(() => {
-          this.checkQrcodeStatus();
-        }, 5000);
+        // this.timerId = setInterval(() => {
+        //   this.checkQrcodeStatus();
+        // }, 5000);
+        const url = this.getUUID()
+        if (/MicroMessenger/.test(navigator.userAgent)) {
+          window.location = url
+        } else {
+          // 不在微信浏览器中
+          const uuid = Cookies.get("uuid")
+        }
     },
   computed: {
     qrcodeUrl() {
       const randomNum = Date.now();
       this.qrcodeKey = randomNum;
-      return `https://api.punengshuo.com/api/auth/getQrcode?width=256&height=256&qrcodeKey=${this.qrcodeKey}`;
+      return `/api/auth/getQrcode?width=256&height=256&qrcodeKey=${this.qrcodeKey}`;
     },
   },
   beforeDestroy() {
@@ -72,9 +81,16 @@ export default {
     refreshQrcode() {
       this.qrcodeKey = Date.now();
     },
+    async getUUID() {
+      const res =  await fetch('/api/auth/getUUID')
+      const result = await res.json()
+      console.log(result)
+      console.log(result.data)
+      return result.data.url
+    },
     async checkQrcodeStatus() {
 
-      const res = await fetch('https://api.punengshuo.com/api/auth/checkQrcode', {
+      const res = await fetch('/api/auth/checkQrcode', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ qrcodeKey: this.qrcodeKey+"", redirectUrl: this.redirectUrl })
@@ -102,7 +118,7 @@ export default {
                 return;
             }
       // TODO: 发送验证码的逻辑
-      fetch('https://api.punengshuo.com/api/auth/sendSms', {
+      fetch('/api/auth/sendSms', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ account: this.mobile})
@@ -133,7 +149,7 @@ export default {
             }
             try {
                 // 发送登录请求
-                const res = await fetch('https://api.punengshuo.com/api/auth/loginThird', {
+                const res = await fetch('/api/auth/loginThird', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ account: this.username, pwd: this.password, redirectUrl: this.redirectUrl })
@@ -164,7 +180,7 @@ export default {
             }
             try {
                 // 发送登录请求
-                const res = await fetch('https://api.punengshuo.com/api/auth/loginPhone', {
+                const res = await fetch('/api/auth/loginPhone', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ account: this.mobile, smsCaptcha: this.smsCaptcha, redirectUrl: this.redirectUrl })

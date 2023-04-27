@@ -59,9 +59,7 @@ export default {
         }else{
           this.redirectUrl = 'https://chengapi.yufu.pub/callback'
         }
-        // this.timerId = setInterval(() => {
-        //   this.checkQrcodeStatus();
-        // }, 5000);
+      
       this.getUUID()
        
        
@@ -89,6 +87,12 @@ export default {
           console.log(result.data)
           // 不在微信浏览器中
           const uuid = Cookies.get("uuid")
+            if(uuid){
+              this.timerId = setInterval(() => {
+              this.checkQrcodeStatus(uuid);
+            }, 5000);
+            }
+
           QRCode.toDataURL(result.data)
             .then(url => {
               this.qrcodeUrl = url;
@@ -98,12 +102,12 @@ export default {
             });
         }
     },
-    async checkQrcodeStatus() {
+    async checkQrcodeStatus(uuid) {
 
       const res = await fetch('/api/auth/checkQrcode', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ qrcodeKey: this.qrcodeKey+"", redirectUrl: this.redirectUrl })
+                    body: JSON.stringify({ qrcodeKey: uuid, redirectUrl: this.redirectUrl })
                 });
       const result = await res.json();
       console.log(result)

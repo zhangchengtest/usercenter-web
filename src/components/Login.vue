@@ -82,8 +82,10 @@ export default {
       const result = await res.json()
 
       if (/MicroMessenger/.test(navigator.userAgent)) {
+          console.log(result.data)
           window.location = result.data
         } else {
+          console.log(result.data)
           // 不在微信浏览器中
           const uuid = Cookies.get("uuid")
         }

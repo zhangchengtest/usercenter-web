@@ -26,7 +26,7 @@
         sendBtnText: '发送验证码',
         canSendCode: true,
         redirectUrl: '',
-        openid: '',
+        uuid: '',
         username: '',
         password: '',
         mobile: '',
@@ -40,7 +40,7 @@
           }else{
             this.redirectUrl = 'https://chengapi.yufu.pub/callback'
           }
-          this.openid = this.$route.query.openid
+          this.uuid = this.$route.query.uuid
          
       },
     methods: {
@@ -85,16 +85,16 @@
                   this.error = '手机号或验证码不能为空';
                   return;
               }
-              if (!this.openid) {
-                this.error = 'openid不能为空';
+              if (!this.uuid) {
+                this.error = 'uuid不能为空';
                 return;
               }
               try {
                   // 发送登录请求
-                  const res = await fetch('/api/auth/loginPhone', {
+                  const res = await fetch('/api/auth/loginPhoneAndWechat', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ account: this.mobile, smsCaptcha: this.smsCaptcha, openid: this.openid, redirectUrl: this.redirectUrl })
+                      body: JSON.stringify({ account: this.mobile, smsCaptcha: this.smsCaptcha, uuid: this.uuid, redirectUrl: this.redirectUrl })
                   });
                   if (!res.ok) {
                       this.error = '登录失败，请检查手机号或验证码是否正确';

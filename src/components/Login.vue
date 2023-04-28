@@ -46,7 +46,6 @@ export default {
       password: '',
       mobile: '',
       smsCaptcha: '',
-      qrcodeKey: '',
       timerId: null,
       error: '',
       qrcodeUrl: '',
@@ -78,7 +77,6 @@ export default {
   },
   methods: {
     refreshQrcode() {
-      this.qrcodeKey = Date.now();
     },
     async getUUID() {
       const res = await fetch('/api/auth/getUUID', {
@@ -116,7 +114,7 @@ export default {
       const res = await fetch('/api/auth/checkQrcode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qrcodeKey: uuid })
+        body: JSON.stringify({ uuid: uuid })
       });
       const result = await res.json();
       console.log(result)

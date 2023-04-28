@@ -66,7 +66,7 @@ export default {
      
       } else {
         this.activeTab = 'qrcode'
-        this.qrcodeText = '二维码登录'
+        this.qrcodeText = '微信扫码登录'
         this.codeText = '验证码登录'
       }
 
@@ -116,7 +116,7 @@ export default {
       const res = await fetch('/api/auth/checkQrcode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qrcodeKey: uuid, redirectUrl: this.redirectUrl })
+        body: JSON.stringify({ qrcodeKey: uuid })
       });
       const result = await res.json();
       console.log(result)

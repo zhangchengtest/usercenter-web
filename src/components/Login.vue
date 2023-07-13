@@ -58,7 +58,7 @@ export default {
     if (this.$route.query.redirectUrl) {
       this.redirectUrl = this.$route.query.redirectUrl
     } else {
-      this.redirectUrl = 'https://chengapi.yufu.pub/callback'
+      this.redirectUrl = 'https://clock.cuiyi.club/callback'
     }
 
     if (/MicroMessenger/.test(navigator.userAgent)) {
